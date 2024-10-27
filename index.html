@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/milligram/1.4.1/milligram.css"
+    />
+    <?!= includeExternalFile('index_css');  ?>
+</head>
+<body>
+<div class="navbar">
+    <a href="#Importer" onclick="showPage('Importer')">Importer</a>
+    <a href="#Filter" onclick="showPage('Filter')">Filter</a>
+</div>
+
+<div id="Importer" class="content">
+    <h1>File Importer</h1>
+     <form id="import_form" onsubmit="finishSelection(); return false;">                
+        <div>
+            <label for="fileUpload">Upload File:</label>
+            <input type="file" id="fileUpload" name="fileUpload" required>
+        </div>
+        
+        <div>
+        <label for="fileName"> Rename the File: </label> 
+        <input type="text" id="fileName"  name="fileName"  placeholder="New Name of the File" maxlength="30" />
+        </div>
+
+        <div>
+            <label for="customerName_importer">Select Customer Name:</label>
+            <select id="customerName_importer" name="customerName_importer" required><option value=""></option></select>
+            
+        </div>
+
+        <div>
+            <label for="processType_importer">Select Process Type:</label>
+            <select id="processType_importer" name="processType_importer" required><option value=""></option></select>
+           
+        </div>
+
+        <div>
+            <label for="dataReceiving_importer">Data of Receiving the Data:</label>
+            <input type="date" id="dataReceiving_importer" name="dataReceiving_importer" required></input>
+        </div>
+        
+        <div>
+            <label for="dataDeletion_importer">Date of deletion:</label>
+            <input type="date" id="dataDeletion_importer" name="dataDeletion_importer" required></input>
+        </div>
+
+        <input type="submit" value="Import">
+    </form>
+</div>
+
+<div id="Filter" class="content" style="display: none;">
+    <h1>Filter Page</h1>
+
+    <form id="searchForm" onsubmit="searchFiles(); return false;">
+      <label for="customerName_filter">Customer Name:</label>
+      <select id="customerName_filter" name="customerName_filter">
+        <option value=""></option>
+      </select><br><br>
+      <label for="processType_filter">Process Type:</label>
+      <select id="processType_filter" name="processType_filter">
+        <option value=""></option>
+      </select><br><br>
+      <input type="submit" value="Search">
+    </form>
+    <div id="results"></div>
+</div>
+
+<script>  
+function showPage(page) {
+    document.getElementById('Importer').style.display = 'none';
+    document.getElementById('Filter').style.display = 'none';    
+    document.getElementById(page).style.display = 'block';
+} 
+
+function populateSelect(selectId, properties) {
+  const select = document.getElementById(selectId);
+  console.log(`Populating ${selectId} with properties:`, properties);
+  properties.forEach(property => {
+    const option = document.createElement('option');
+    option.value = property;
+    option.text = property;
+    select.add(option);
+  });
+}
+
+
+function initialize() {
+  google.script.run.withSuccessHandler(function(response) {
+    populateSelect('customerName_filter', response[0]);
+    populateSelect('customerName_importer', response[0]);
+    populateSelect('processType_filter', response[1]);
+    populateSelect('processType_importer', response[1]);
+  }).getProperties();  
+}
+
+function searchFiles() {
+        const formData = new FormData(document.getElementById('searchForm'));
+        const customerName = formData.get('customerName_filter');
+        const processType = formData.get('processType_filter');
+        google.script.run.withSuccessHandler(function(results) {
+        displayResults(results);
+      }).searchProperty(customerName, processType);
+}
+
+function displayResults(result) {
+        const resultsDiv = document.getElementById('results');
+        resultsDiv.innerHTML = '';
+        if (result.length > 0) {
+          resultsDiv.innerHTML = '<h2>Search Results</h2>';
+          console.log(results);
+          for (let i = 0; i < result.length; i++) {
+            resultsDiv.innerHTML += `<p>${result[i]}</p>`;
+          }
+        }
+          else {
+          resultsDiv.innerHTML = '<p>No files found matching the criteria.</p>';
+          }
+}
+
+
+function finishSelection() {
+    const formData = new FormData(document.getElementById('import_form'));
+    const file = formData.get('fileUpload');
+    const originalFileName = file.name;
+    const newFileName = formData.get("fileName");
+    const customerName = formData.get('customerName_importer');
+    const processType = formData.get('processType_importer');
+    const dataReceiving = formData.get('dataReceiving_importer');
+    const dataDeletion = formData.get('dataDeletion_importer');
+    let filePathAfterMove;
+    
+    console.log("retrieve data passed");
+    console.log("file:", file);
+    console.log("newFileName:", newFileName);
+    console.log("customerName:", customerName);
+    console.log("processType:", processType);
+    console.log("dataReceiving:", dataReceiving);
+    console.log("dataDeletion:", dataDeletion);
+
+    if (!file) {
+      console.error('No file selected');
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = function(event) {
+      const fileContent = event.target.result;
+      console.log(fileContent);
+      google.script.run.withSuccessHandler(function(fileID) {
+                test(fileID, originalFileName);
+              }).renameAndMoveFile(file.name, fileContent, newFileName, customerName, processType, dataReceiving, dataDeletion);
+      //google.script.run.renameAndMoveFile(file.name, fileContent, newFileName, customerName, processType, dataReceiving, dataDeletion);
+    };
+
+    reader.onerror = function(event) {
+      console.error('Error reading file', event);
+    };
+    reader.readAsText(file);
+}
+
+function test(fileID, originalFileName) {
+  console.log("inside test");
+  google.script.run.withSuccessHandler(function(filePathAfterMove) {
+    log(fileID,originalFileName, filePathAfterMove);    
+  }).getPath(fileID);
+}
+
+function log(fileID, originalFileName, filePathAfterMove) {
+  console.log("Original File Name:", originalFileName);
+  console.log("File Path After Move:", filePathAfterMove);
+  google.script.run.logImportedFile(fileID, originalFileName, filePathAfterMove);
+  alert(`${originalFileName} has been moved to ${filePathAfterMove}`);
+  document.getElementById('import_form').reset();
+}
+
+document.addEventListener('DOMContentLoaded', initialize);
+</script>
+
+</body>
+</html>
