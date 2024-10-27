@@ -1,4 +1,4 @@
-function searchProperty(customName, processType) {
+function searchProperty(customName, processType, dataReceiving, dataDeletion) {
   var queryParts = [];
   if (customName) {
     queryParts.push('properties has { key="CustomerName" and value="' + customName + '" and visibility="PUBLIC" }');
@@ -6,8 +6,14 @@ function searchProperty(customName, processType) {
   if (processType) {
     queryParts.push('properties has { key="ProcessType" and value="' + processType + '" and visibility="PUBLIC" }');
   }
+  if (dataReceiving) {
+    queryParts.push('properties has { key="DataReceiving" and value="' + dataReceiving + '" and visibility="PUBLIC" }');
+  }
+  if (dataDeletion) {
+    queryParts.push('properties has { key="DataDeletion" and value="' + dataDeletion + '" and visibility="PUBLIC" }');
+  }
   if (queryParts.length === 0) {
-    console.log("Error: At least one parameter (customName, processType) must be defined.");
+    console.log("Error: At least one parameter (customName, processType, dataReceiving, dataDeletion) must be defined.");
     return [];
   }
 

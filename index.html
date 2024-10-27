@@ -20,12 +20,12 @@
      <form id="import_form" onsubmit="finishSelection(); return false;">                
         <div>
             <label for="fileUpload">Upload File:</label>
-            <input type="file" id="fileUpload" name="fileUpload" required>
+            <input type="file" id="fileUpload" name="fileUpload" accept=".zip, .7z, .gz"   required>
         </div>
         
         <div>
         <label for="fileName"> Rename the File: </label> 
-        <input type="text" id="fileName"  name="fileName"  placeholder="New Name of the File" maxlength="30" />
+        <input type="text" id="fileName"  name="fileName"  placeholder="New Name of the File" maxlength="30" required />
         </div>
 
         <div>
@@ -66,6 +66,12 @@
       <select id="processType_filter" name="processType_filter">
         <option value=""></option>
       </select><br><br>
+      <label for="dataReceiving_filter">Data Receiving Date:</label>
+      <input type="date" id="dataReceiving_filter" name="dataReceiving_filter">
+      <br><br>
+      <label for="dataDeletion_filter">Data Deletion Date:</label>
+      <input type="date" id="dataDeletion_filter" name="dataDeletion_filter">
+      <br><br>
       <input type="submit" value="Search">
     </form>
     <div id="results"></div>
@@ -80,7 +86,6 @@ function showPage(page) {
 
 function populateSelect(selectId, properties) {
   const select = document.getElementById(selectId);
-  console.log(`Populating ${selectId} with properties:`, properties);
   properties.forEach(property => {
     const option = document.createElement('option');
     option.value = property;
@@ -103,9 +108,11 @@ function searchFiles() {
         const formData = new FormData(document.getElementById('searchForm'));
         const customerName = formData.get('customerName_filter');
         const processType = formData.get('processType_filter');
+        const dataReceiving = formData.get('dataReceiving_filter');
+        const dataDeletion = formData.get('dataDeletion_filter');
         google.script.run.withSuccessHandler(function(results) {
         displayResults(results);
-      }).searchProperty(customerName, processType);
+      }).searchProperty(customerName, processType, dataReceiving, dataDeletion);
 }
 
 function displayResults(result) {
@@ -125,8 +132,11 @@ function displayResults(result) {
 
 
 function finishSelection() {
+    console.log('function finishSelection called');
     const formData = new FormData(document.getElementById('import_form'));
+
     const file = formData.get('fileUpload');
+
     const originalFileName = file.name;
     const newFileName = formData.get("fileName");
     const customerName = formData.get('customerName_importer');
@@ -135,29 +145,42 @@ function finishSelection() {
     const dataDeletion = formData.get('dataDeletion_importer');
     let filePathAfterMove;
     
-    console.log("retrieve data passed");
-    console.log("file:", file);
-    console.log("newFileName:", newFileName);
-    console.log("customerName:", customerName);
-    console.log("processType:", processType);
-    console.log("dataReceiving:", dataReceiving);
-    console.log("dataDeletion:", dataDeletion);
+    console.log("import data:",dataReceiving);
+    console.log("file name:",originalFileName);
 
     if (!file) {
       console.error('No file selected');
       return;
     }
 
-    const reader = new FileReader();
 
-    reader.onload = function(event) {
-      const fileContent = event.target.result;
-      console.log(fileContent);
-      google.script.run.withSuccessHandler(function(fileID) {
-                test(fileID, originalFileName);
-              }).renameAndMoveFile(file.name, fileContent, newFileName, customerName, processType, dataReceiving, dataDeletion);
-      //google.script.run.renameAndMoveFile(file.name, fileContent, newFileName, customerName, processType, dataReceiving, dataDeletion);
-    };
+    const reader = new FileReader();
+    const myUpload = document.querySelector('input[name="fileUpload"]');
+
+    const file_test = myUpload.files[0];
+
+    // reader.onload = function(event) {
+    //   const fileContent = event.target.result;
+    //   console.log("fileContent");
+    //   google.script.run.withSuccessHandler(function(fileID) {
+    //             test(fileID, originalFileName);
+    //           }).renameAndMoveFile(file.name, fileContent, newFileName, customerName, processType, dataReceiving, dataDeletion);
+    //   //google.script.run.renameAndMoveFile(file.name, fileContent, newFileName, customerName, processType, dataReceiving, dataDeletion);
+    // };
+
+    reader.onload = function(e){
+          const vals = reader.result.split(',');
+          const obj = {
+            fileName:file_test.name,
+            mimeType :file_test.type,
+            data : vals[1]
+          }
+          console.log(obj);
+          google.script.run.withSuccessHandler(function(fileID) {
+                 test(fileID, originalFileName);
+               }).renameAndMoveFile(obj, newFileName, customerName, processType, dataReceiving, dataDeletion);
+        }
+        reader.readAsDataURL(file);
 
     reader.onerror = function(event) {
       console.error('Error reading file', event);
@@ -165,16 +188,19 @@ function finishSelection() {
     reader.readAsText(file);
 }
 
+function myResult(val){
+        console.log(val.url, val.name);
+      }
+
 function test(fileID, originalFileName) {
-  console.log("inside test");
+  console.log("getpath and log function called");
   google.script.run.withSuccessHandler(function(filePathAfterMove) {
     log(fileID,originalFileName, filePathAfterMove);    
   }).getPath(fileID);
 }
 
 function log(fileID, originalFileName, filePathAfterMove) {
-  console.log("Original File Name:", originalFileName);
-  console.log("File Path After Move:", filePathAfterMove);
+  console.log("log function called");
   google.script.run.logImportedFile(fileID, originalFileName, filePathAfterMove);
   alert(`${originalFileName} has been moved to ${filePathAfterMove}`);
   document.getElementById('import_form').reset();
