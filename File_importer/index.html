@@ -13,9 +13,10 @@
 <div class="navbar">
     <a href="#Importer" onclick="showPage('Importer')">Importer</a>
     <a href="#Filter" onclick="showPage('Filter')">Filter</a>
+    <a href="#Manager" onclick="showPage('Manager')">Manager</a>
 </div>
 
-<div id="Importer" class="content">
+<div id="Importer" class="content" style="display: none;">
     <h1>File Importer</h1>
      <form id="import_form" onsubmit="finishSelection(); return false;">                
         <div>
@@ -24,20 +25,47 @@
         </div>
         
         <div>
-        <label for="fileName"> Rename the File: </label> 
-        <input type="text" id="fileName"  name="fileName"  placeholder="New Name of the File" maxlength="30" required />
+            <label for="fileName"> Rename the File: </label> 
+            <input type="text" id="fileName"  name="fileName"  placeholder="New Name of the File" maxlength="30" required />
         </div>
 
+        <div style="display: inline-block;">
+            <input type="checkbox" id="otCheckbox_importer" onclick="toggleOTDropdowns('otContainer_importer','otCheckbox_importer')" />
+            <label for="otCheckbox_importer">It is an OT data</label>
+        </div>
+        
         <div>
             <label for="customerName_importer">Select Customer Name:</label>
             <select id="customerName_importer" name="customerName_importer" required><option value=""></option></select>
-            
         </div>
 
         <div>
             <label for="processType_importer">Select Process Type:</label>
             <select id="processType_importer" name="processType_importer" required><option value=""></option></select>
-           
+        </div>
+
+        <div>
+            <label for="Machinesupplier_importer">Select Machine Supplier:</label>
+            <select id="Machinesupplier_importer" name="Machinesupplier_importer" required><option value=""></option></select>
+        </div>
+
+        <div>
+            <label for="Sensor_importer">Select Sensor:</label>
+            <select id="Sensor_importer" name="Sensor_importer" required><option value=""></option></select>
+        </div>
+
+        <div id="otContainer_importer" style="display: none;">
+            <label for="ot_Inputname_importer">Select Inputname:</label>
+            <select id="ot_Inputname_importer" name="ot_Inputname_importer" required><option value="">--Select OT Inputname--</option></select>
+
+            <label for="ot_PrinterID_importer">Select PrinterID:</label>
+            <select id="ot_PrinterID_importer" name="ot_PrinterID_importer" required><option value="">--Select OT PrinterID--</option></select>
+
+            <label for="ot_Material_importer">Select Material:</label>
+            <select id="ot_Material_importer" name="ot_Material_importer" required><option value="">--Select OT Material--</option></select>
+
+            <label for="ot_LayerThickness_importer">Select LayerThickness:</label>
+            <select id="ot_LayerThickness_importer" name="ot_LayerThickness_importer" required><option value="">--Select OT LayerThickness--</option></select>
         </div>
 
         <div>
@@ -55,32 +83,140 @@
 </div>
 
 <div id="Filter" class="content" style="display: none;">
-    <h1>Filter Page</h1>
-
+    <h1>File Filter</h1>
     <form id="searchForm" onsubmit="searchFiles(); return false;">
+    <div style="display: inline-block">
+      <input type="checkbox" id="otCheckbox_filter" onclick="toggleOTDropdowns('otContainer_filter','otCheckbox_filter')" />
+      <label for="otCheckbox_filter">It is an OT data</label>
+    </div>
+
+    <br><br>
+
       <label for="customerName_filter">Customer Name:</label>
       <select id="customerName_filter" name="customerName_filter">
         <option value=""></option>
       </select><br><br>
+
       <label for="processType_filter">Process Type:</label>
       <select id="processType_filter" name="processType_filter">
         <option value=""></option>
       </select><br><br>
+
+      <label for="Machinesupplier_filter">Machine Supplier:</label>
+      <select id="Machinesupplier_filter" name="Machinesuppliere_filter">
+        <option value=""></option>
+      </select><br><br>
+
+      <label for="Sensor_filter">Sensor:</label>
+      <select id="Sensor_filter" name="Sensor_filter">
+        <option value=""></option>
+      </select><br><br>
+
+      <div id="otContainer_filter" style="display: none;">
+            <label for="ot_Inputname_filter">Select Inputname:</label>
+            <select id="ot_Inputname_filter" name="ot_Inputname_filter" required><option value="">--Select OT Inputname--</option></select>
+
+            <label for="ot_PrinterID_filter">Select PrinterID:</label>
+            <select id="ot_PrinterID_filter" name="ot_PrinterID_filter" required><option value="">--Select OT PrinterID--</option></select>
+
+            <label for="ot_Material_filter">Select Material:</label>
+            <select id="ot_Material_filter" name="ot_Material_filter" required><option value="">--Select OT Material--</option></select>
+
+            <label for="ot_LayerThickness_filter">Select LayerThickness:</label>
+            <select id="ot_LayerThickness_filter" name="ot_LayerThickness_filter" required><option value="">--Select OT LayerThickness--</option></select>
+        </div>
+
       <label for="dataReceiving_filter">Data Receiving Date:</label>
       <input type="date" id="dataReceiving_filter" name="dataReceiving_filter">
       <br><br>
+
       <label for="dataDeletion_filter">Data Deletion Date:</label>
       <input type="date" id="dataDeletion_filter" name="dataDeletion_filter">
       <br><br>
+
       <input type="submit" value="Search">
+
     </form>
     <div id="results"></div>
+</div>
+
+<div id="Manager" class="content" style="display: none;">
+    <h1>File Manager</h1>
+
+    <h2>List of manually uploaded file</h2>
+    <button onclick="manager_listFiles()"> Load Files </button>
+    
+     <form id="import_form" onsubmit="finishSelection(); return false;">                
+        <div>
+            <label for="fileSelect">Select a File:</label>
+            <select id="fileSelect">
+              <ooption value="">--Select a file--</ooption>
+            </select>
+        </div>
+        
+        <div style="display:inline-block">
+        <input type="checkbox" id="otCheckbox_manager" onclick="toggleOTDropdowns('otContainer_manager','otCheckbox_manager')" />
+        <label for="otCheckbox_manager">It is an OT data</label>
+        </div>
+
+        <div>
+        <label for="fileName"> Rename the File: </label> 
+        <input type="text" id="fileName"  name="fileName"  placeholder="New Name of the File" maxlength="30" required />
+        </div>
+
+        <div>
+            <label for="customerName_manager">Select Customer Name:</label>
+            <select id="customerName_manager" name="customerName_manager" required><option value=""></option></select> 
+        </div>
+
+        <div>
+            <label for="processType_manager">Select Process Type:</label>
+            <select id="processType_manager" name="processType_manager" required><option value=""></option></select>
+        </div>
+
+        <div>
+            <label for="Machinesupplier_manager">Select Machine Supplier:</label>
+            <select id="Machinesupplier_manager" name="Machinesupplier_manager" required><option value=""></option></select>
+        </div>
+
+        <div>
+            <label for="Sensor_manager">Select Sensor:</label>
+            <select id="Sensor_manager" name="Sensor_manager" required><option value=""></option></select>
+        </div>
+
+        <div id="otContainer_manager" style="display: none;">
+            <label for="ot_Inputname_manager">Select Inputname:</label>
+            <select id="ot_Inputname_manager" name="ot_Inputname_manager" required><option value="">--Select OT Inputname--</option></select>
+
+            <label for="ot_PrinterID_manager">Select PrinterID:</label>
+            <select id="ot_PrinterID_manager" name="ot_PrinterID_managerr" required><option value="">--Select OT PrinterID--</option></select>
+
+            <label for="ot_Material_manager">Select Material:</label>
+            <select id="ot_Material_manager" name="ot_Material_manager" required><option value="">--Select OT Material--</option></select>
+
+            <label for="ot_LayerThickness_manager">Select LayerThickness:</label>
+            <select id="ot_LayerThickness_manager" name="ot_LayerThickness_manager" required><option value="">--Select OT LayerThickness--</option></select>
+        </div>
+
+        <div>
+            <label for="dataReceiving_manager">Data of Receiving the Data:</label>
+            <input type="date" id="dataReceiving_manager" name="dataReceiving_manager" required></input>
+        </div>
+        
+        <div>
+            <label for="dataDeletion_manager">Date of deletion:</label>
+            <input type="date" id="dataDeletion_manager" name="dataDeletion_manager" required></input>
+        </div>
+
+        <input type="submit" value="Import">
+    </form>
 </div>
 
 <script>  
 function showPage(page) {
     document.getElementById('Importer').style.display = 'none';
-    document.getElementById('Filter').style.display = 'none';    
+    document.getElementById('Filter').style.display = 'none';
+    document.getElementById('Manager').style.display = 'none';     
     document.getElementById(page).style.display = 'block';
 } 
 
@@ -94,13 +230,32 @@ function populateSelect(selectId, properties) {
   });
 }
 
-
 function initialize() {
   google.script.run.withSuccessHandler(function(response) {
     populateSelect('customerName_filter', response[0]);
     populateSelect('customerName_importer', response[0]);
+    populateSelect('customerName_manager', response[0]);
     populateSelect('processType_filter', response[1]);
     populateSelect('processType_importer', response[1]);
+    populateSelect('processType_manager', response[1]);
+    populateSelect('Machinesupplier_filter', response[2]);
+    populateSelect('Machinesupplier_importer', response[2]);
+    populateSelect('Machinesupplier_manager', response[2]);
+    populateSelect('Sensor_filter', response[3]);
+    populateSelect('Sensor_importer', response[3]);
+    populateSelect('Sensor_manager', response[3]);
+    populateSelect('ot_Inputname_filter', response[4]);
+    populateSelect('ot_Inputname_importer', response[4]);
+    populateSelect('ot_Inputname_manager', response[4]);
+    populateSelect('ot_PrinterID_filter', response[5]);
+    populateSelect('ot_PrinterID_importer', response[5]);
+    populateSelect('ot_PrinterID_manager', response[5]);
+    populateSelect('ot_Material_filter', response[6]);
+    populateSelect('ot_Material_importer', response[6]);
+    populateSelect('ot_Material_manager', response[6]);
+    populateSelect('ot_LayerThickness_filter', response[7]);
+    populateSelect('ot_LayerThickness_importer', response[7]);
+    populateSelect('ot_LayerThickness_manager', response[7]);
   }).getProperties();  
 }
 
@@ -129,7 +284,6 @@ function displayResults(result) {
           resultsDiv.innerHTML = '<p>No files found matching the criteria.</p>';
           }
 }
-
 
 function finishSelection() {
     console.log('function finishSelection called');
@@ -204,6 +358,27 @@ function log(fileID, originalFileName, filePathAfterMove) {
   google.script.run.logImportedFile(fileID, originalFileName, filePathAfterMove);
   alert(`${originalFileName} has been moved to ${filePathAfterMove}`);
   document.getElementById('import_form').reset();
+}
+
+function manager_listFiles() {
+  google.script.run.withSuccessHandler(manager_populateDropdown).getFileList();
+}
+
+function manager_populateDropdown(files) {
+  const fileSelect = document.getElementById('fileSelect');
+  fileSelect.innerHTML = '<option value="">--Select a file--</option>';
+
+  files.forEach(file => {
+    const option = document.createElement('option');
+    option.value = file.id;
+    option.text = file.name;
+    fileSelect.add(option);
+  });
+}
+
+function toggleOTDropdowns(container_id, checkbox_id) {
+  const otContainer = document.getElementById(container_id);
+  otContainer.style.display = document.getElementById(checkbox_id).checked ? 'block' : 'none';
 }
 
 document.addEventListener('DOMContentLoaded', initialize);
